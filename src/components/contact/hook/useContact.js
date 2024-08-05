@@ -1,21 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import {
-  addDoc,
-  collection,
-  query,
-  where,
-  deleteDoc,
-  updateDoc,
-  doc,
-  getDocs,
-  getDoc,
+  addDoc, collection, query, where, deleteDoc, updateDoc, doc, getDocs, getDoc,
 } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../../../firebase/auth";
 import { contactSchema } from "../schema/contactSchema";
 import { useToastMessages } from "@/components/message/useToastMessages";
-import { db } from "../../../../firebase/firebase";
+import { db, storage } from "../../../../firebase/firebase";
 
 export const useContact = () => {
   const params = useParams();
@@ -24,6 +17,7 @@ export const useContact = () => {
   const { Success, Warn } = useToastMessages();
   const [allItems, setItems] = useState([]);
   const [itemUp, setItem] = useState([]);
+  const [image, setImage] = useState(null);
 
   useEffect(() => {
     if (authUser?.email) {
@@ -54,7 +48,7 @@ export const useContact = () => {
 
   const initialValues = {
     itemName: itemUp && itemUp.itemName ? itemUp.itemName : "",
-    quantity: itemUp && itemUp.quantity ? itemUp.quantity : 1,
+    quantity: itemUp && itemUp.quantity ? itemUp.quantity : 0,
   };
 
   const handleDelete = async (id) => {
@@ -83,29 +77,42 @@ export const useContact = () => {
     }
   };
 
+  const handleImageUpload = async (file) => {
+    const storageRef = ref(storage, `images/${file.name}`);
+    await uploadBytes(storageRef, file);
+    return getDownloadURL(storageRef);
+  };
+
   const handleSubmit = async (values, { resetForm }) => {
     const { itemName, quantity } = values;
     try {
+      let imageURL = itemUp.imageURL || "";
+      if (image) {
+        imageURL = await handleImageUpload(image);
+      }
+
       if (params.contact !== undefined && params.contact !== "") {
         const docRef = doc(db, "items", params.contact);
-        await updateDoc(docRef, values);
+        await updateDoc(docRef, { ...values, imageURL });
         router.push("/contact");
       } else {
         await addDoc(collection(db, "items"), {
           itemName,
           quantity,
           userEmail: authUser.email,
+          imageURL,
         });
       }
       Success("Item successfully added!");
       if (authUser?.email) {
         await handleFetch(authUser.email);
       }
+      resetForm();
     } catch (error) {
       console.error(error);
       Warn("Something went wrong!");
     }
-    resetForm();
+    setImage(null);
   };
 
   return {
@@ -114,5 +121,7 @@ export const useContact = () => {
     handleSubmit,
     handleDelete,
     allItems,
+    setImage,
+    handleImageUpload,
   };
 };

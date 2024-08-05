@@ -4,7 +4,7 @@ import { Typography } from "@material-tailwind/react";
 import { BsPencilFill } from "react-icons/bs";
 import { MdDeleteForever } from "react-icons/md";
 
-const TABLE_HEAD = ["Item Name", "Quantity", "Action"];
+const TABLE_HEAD = ["Image", "Item Name", "Quantity", "Action"];
 
 const View = ({ items, handleDelete }) => {
   const router = useRouter();
@@ -34,12 +34,21 @@ const View = ({ items, handleDelete }) => {
           </tr>
         </thead>
         <tbody>
-          {items.map(({ id, itemName, quantity }, index) => {
+          {items.map(({ id, itemName, quantity, imageURL }, index) => {
             const isLast = index === items.length - 1;
             const classes = isLast ? "p-4" : "p-4 border-b border-blue-gray-50";
 
             return (
               <tr key={id}>
+                <td className={classes}>
+                  {imageURL && (
+                    <img
+                      src={imageURL}
+                      alt={itemName}
+                      className="h-20 w-20 object-cover"
+                    />
+                  )}
+                </td>
                 <td className={classes}>
                   <div className="flex flex-col">
                     <Typography
@@ -51,7 +60,6 @@ const View = ({ items, handleDelete }) => {
                     </Typography>
                   </div>
                 </td>
-
                 <td className={classes}>
                   <div className="flex flex-col">
                     <Typography
@@ -63,7 +71,6 @@ const View = ({ items, handleDelete }) => {
                     </Typography>
                   </div>
                 </td>
-
                 <td className="flex justify-center items-center gap-8 p-3">
                   <button
                     onClick={() => {

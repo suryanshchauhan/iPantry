@@ -1,6 +1,5 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
-
 import { onAuthStateChanged, signOut as authSignOut } from "firebase/auth";
 import { auth } from "./firebase";
 
@@ -11,15 +10,15 @@ const AuthUserContext = createContext({
 
 export default function useFirebaseAuth() {
   const [authUser, setAuthUser] = useState(null);
-  const [isLoading, SetLoading] = useState(false);
+  const [isLoading, setLoading] = useState(true);
 
   const clear = () => {
     setAuthUser(null);
-    SetLoading(false);
+    setLoading(false);
   };
 
   const authStateChanged = (user) => {
-    SetLoading(true);
+    setLoading(true);
     if (!user) {
       clear();
       return;
@@ -30,7 +29,7 @@ export default function useFirebaseAuth() {
       name: user.displayName,
     });
 
-    SetLoading(false);
+    setLoading(false);
   };
 
   const signOut = () => {
@@ -46,7 +45,7 @@ export default function useFirebaseAuth() {
     authUser,
     isLoading,
     setAuthUser,
-    SetLoading,
+    setLoading,
     signOut,
   };
 }
