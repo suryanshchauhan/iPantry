@@ -4,6 +4,7 @@ import {
   addDoc,
   collection,
   query,
+  where,
   deleteDoc,
   updateDoc,
   doc,
@@ -68,7 +69,7 @@ export const useContact = () => {
 
   const handleFetch = async (email) => {
     try {
-      const q = query(collection(db, "items"));
+      const q = query(collection(db, "items"), where("userEmail", "==", email));
       const querySnapshot = await getDocs(q);
       let data = [];
       querySnapshot.forEach((doc) => {
@@ -91,10 +92,11 @@ export const useContact = () => {
         await addDoc(collection(db, "items"), {
           itemName: itemName,
           quantity: quantity,
+          userEmail: authUser.email,
         });
       }
       Success("Item successfully added!");
-      handleFetch();
+      handleFetch(authUser.email);
     } catch (error) {
       console.error(error);
       Warn("Something went wrong!");
