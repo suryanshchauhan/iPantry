@@ -26,7 +26,7 @@ export const useContact = () => {
   const [itemUp, setItem] = useState([]);
 
   useEffect(() => {
-    if (!!authUser) {
+    if (authUser?.email) {
       handleFetch(authUser.email);
     }
   }, [authUser]);
@@ -61,7 +61,9 @@ export const useContact = () => {
     try {
       await deleteDoc(doc(db, "items", id));
       Success("Item successfully deleted!");
-      await handleFetch(authUser.email);
+      if (authUser?.email) {
+        await handleFetch(authUser.email);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -90,13 +92,15 @@ export const useContact = () => {
         router.push("/contact");
       } else {
         await addDoc(collection(db, "items"), {
-          itemName: itemName,
-          quantity: quantity,
+          itemName,
+          quantity,
           userEmail: authUser.email,
         });
       }
       Success("Item successfully added!");
-      handleFetch(authUser.email);
+      if (authUser?.email) {
+        await handleFetch(authUser.email);
+      }
     } catch (error) {
       console.error(error);
       Warn("Something went wrong!");
